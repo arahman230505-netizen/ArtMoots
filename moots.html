@@ -19,6 +19,12 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 .user-item span{font-weight:500;}
 .btn-profile{background:var(--accent);color:white;border:none;padding:0.3rem 0.6rem;border-radius:4px;cursor:pointer;}
 .btn-profile:hover{background:#222;}
+.posts-container{margin-top:1rem;display:flex;flex-direction:column;gap:1rem;}
+.post{background:white;padding:0.5rem;border-radius:6px;border:1px solid var(--border);}
+.post img{max-width:100%;border-radius:4px;margin-top:0.3rem;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background:white;padding:1rem;border-radius:8px;width:90%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;}
+.close-modal{position:absolute;top:0.5rem;right:0.5rem;font-size:1.2rem;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -38,14 +44,24 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
         <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
       </nav>
     </div>
-  </header>
+</header>
 
 <main>
   <h2>All Artists</h2>
   <div class="user-list" id="userList"></div>
 </main>
 
+<!-- Modal for user posts -->
+<div class="modal" id="postsModal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeModal">&times;</span>
+    <h3 id="modalUsername"></h3>
+    <div class="posts-container" id="modalPosts"></div>
+  </div>
+</div>
+
 <script src="accounts-database.js"></script>
+<script src="posts-database.js"></script>
 <script>
 // Header login system
 const currentUser = getCurrentUser();
@@ -80,11 +96,37 @@ users.forEach(user=>{
   userList.appendChild(div);
 });
 
-// Profile view
+// Modal elements
+const postsModal = document.getElementById("postsModal");
+const closeModal = document.getElementById("closeModal");
+const modalUsername = document.getElementById("modalUsername");
+const modalPosts = document.getElementById("modalPosts");
+
+// Close modal
+closeModal.addEventListener("click", ()=>{ postsModal.style.display="none"; });
+window.addEventListener("click", e => { if(e.target === postsModal) postsModal.style.display="none"; });
+
+// View profile & posts
 function viewProfile(username){
   const account = getAccounts().find(a=>a.username===username);
   if(account){
-    alert(`Username: ${account.username}\nEmail: ${account.email}`);
+    modalUsername.textContent = `Posts by ${account.username}`;
+    modalPosts.innerHTML = "";
+
+    const userPosts = getPosts().filter(p=>p.user === account.username);
+    if(userPosts.length === 0){
+      modalPosts.innerHTML = "<p>No posts yet.</p>";
+    } else {
+      userPosts.forEach(p=>{
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `<h4>${p.title}</h4>
+                         <p>${p.description}</p>
+                         <img src="${p.image}">`;
+        modalPosts.appendChild(div);
+      });
+    }
+    postsModal.style.display = "flex";
   }
 }
 </script>
