@@ -61,7 +61,7 @@ function toggleForms() {
 // Show correct form based on URL
 const params = new URLSearchParams(window.location.search);
 const mode = params.get("mode");
-const returnPage = params.get("return") || "website.html";
+const returnPage = params.get("return") || "index.html";
 
 const currentUser = getCurrentUser();
 if(currentUser && mode==="account"){
@@ -96,7 +96,7 @@ loginForm.addEventListener("submit", e=>{
 // Logout
 logoutBtn.addEventListener("click",()=>{
   logout();
-  window.location.href = "website.html";
+  window.location.href = "index.html";
 });
 </script>
 
