@@ -1,52 +1,52 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" })); // allow large images
+app.use(bodyParser.json());
 
-// Simple in-memory storage for now (replace with DB later)
-let users = [];
-let posts = [];
+// Simple "database" in a JSON file
+const DB_FILE = "./posts.json";
 
-// Accounts
-app.post("/signup", (req, res) => {
-  const { username, email, password } = req.body;
-  if(users.find(u => u.username === username)){
-    return res.status(400).json({ error: "Username exists" });
-  }
-  users.push({ username, email, password });
+// Helper functions
+function getPosts() {
+  if (!fs.existsSync(DB_FILE)) return [];
+  return JSON.parse(fs.readFileSync(DB_FILE));
+}
+
+function savePosts(posts) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(posts, null, 2));
+}
+
+// Get all posts
+app.get("/posts", (req, res) => {
+  res.json(getPosts());
+});
+
+// Add a post
+app.post("/posts", (req, res) => {
+  const posts = getPosts();
+  posts.push(req.body);
+  savePosts(posts);
   res.json({ success: true });
 });
 
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username===username && u.password===password);
-  if(!user) return res.status(400).json({ error: "Invalid credentials" });
-  res.json({ success: true, username });
+// Edit a post
+app.put("/posts/:index", (req, res) => {
+  const posts = getPosts();
+  posts[req.params.index] = req.body;
+  savePosts(posts);
+  res.json({ success: true });
 });
 
-// Posts
-app.get("/posts", (req,res)=>{
-  res.json(posts);
+// Delete a post
+app.delete("/posts/:index", (req, res) => {
+  const posts = getPosts();
+  posts.splice(req.params.index, 1);
+  savePosts(posts);
+  res.json({ success: true });
 });
 
-app.post("/posts", (req,res)=>{
-  const { title, description, user, image } = req.body;
-  posts.push({ title, description, user, image });
-  res.json({ success:true });
-});
-
-app.delete("/posts/:index", (req,res)=>{
-  const index = parseInt(req.params.index);
-  if(index>=0 && index<posts.length){
-    posts.splice(index,1);
-    res.json({ success:true });
-  } else {
-    res.status(400).json({ error: "Invalid index" });
-  }
-});
-
-const PORT = 3000;
-app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}`));
+app.listen(3000, () => console.log("Server running on http://localhost:3000"));
