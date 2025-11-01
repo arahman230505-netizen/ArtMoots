@@ -1,13 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ArtMoots - Moots</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArtMoots - Moots</title>
+<style>
+:root {--bg:#f9f9f9;--text:#333;--muted:#666;--accent:#111;--border:#ddd;--max-width:1000px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
+header{background:white;border-bottom:1px solid var(--border);padding:1rem 0;}
+.header-container{max-width:var(--max-width);margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:0 1rem;}
+.logo{font-size:1.4rem;font-weight:bold;letter-spacing:0.5px;}
+nav a,#userDisplay{margin-left:1rem;text-decoration:none;color:var(--text);font-weight:500;padding:0.4rem 0.6rem;border-radius:4px;}
+nav a:hover{background:#eee;}
+main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
+.user-list{display:flex;flex-direction:column;gap:0.5rem;}
+.user-item{background:white;padding:0.8rem;border-radius:6px;border:1px solid var(--border);}
+</style>
 </head>
 <body>
-  <header>
+
+<header>
     <div class="header-container">
       <div class="logo">ArtMoots</div>
       <nav>
@@ -23,37 +36,3 @@
       </nav>
     </div>
   </header>
-
-  <main>
-    <h1>Art Moots</h1>
-    <div id="mootsContainer"></div>
-  </main>
-
-  <footer>
-    <p>© 2025 ArtMoots</p>
-  </footer>
-
-  <script src="accounts-database.js"></script>
-  <script src="posts-database.js"></script>
-  <script src="header.js"></script>
-  <script>
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const mootsContainer = document.getElementById("mootsContainer");
-
-    users.forEach(u => {
-      const div = document.createElement("div");
-      div.className = "moot-card";
-      div.innerHTML = `
-        <h3>${u.username}</h3>
-        <button onclick="viewUserPosts('${u.username}')">View Posts</button>
-      `;
-      mootsContainer.appendChild(div);
-    });
-
-    function viewUserPosts(username) {
-      localStorage.setItem("viewUser", username);
-      window.location.href = "posts.html";
-    }
-  </script>
-</body>
-</html>
