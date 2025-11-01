@@ -1,52 +1,78 @@
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const fs = require("fs");
+// Import required modules
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
+const PORT = 3000;
+
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // To parse JSON body
 
-// Simple "database" in a JSON file
-const DB_FILE = "./posts.json";
+// Path to JSON file
+const POSTS_FILE = path.join(__dirname, 'post.json');
 
-// Helper functions
-function getPosts() {
-  if (!fs.existsSync(DB_FILE)) return [];
-  return JSON.parse(fs.readFileSync(DB_FILE));
+// Helper function to read posts
+function readPosts() {
+  try {
+    const data = fs.readFileSync(POSTS_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Error reading posts:', err);
+    return [];
+  }
 }
 
-function savePosts(posts) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(posts, null, 2));
+// Helper function to write posts
+function writePosts(posts) {
+  try {
+    fs.writeFileSync(POSTS_FILE, JSON.stringify(posts, null, 2));
+  } catch (err) {
+    console.error('Error writing posts:', err);
+  }
 }
 
-// Get all posts
-app.get("/posts", (req, res) => {
-  res.json(getPosts());
+// GET all posts
+app.get('/posts', (req, res) => {
+  const posts = readPosts();
+  res.json(posts);
 });
 
-// Add a post
-app.post("/posts", (req, res) => {
-  const posts = getPosts();
-  posts.push(req.body);
-  savePosts(posts);
-  res.json({ success: true });
+// POST a new post
+app.post('/posts', (req, res) => {
+  const posts = readPosts();
+  const newPost = req.body;
+
+  if (!newPost.title || !newPost.content) {
+    return res.status(400).json({ error: 'Post must have a title and content.' });
+  }
+
+  // Add ID
+  newPost.id = posts.length ? posts[posts.length - 1].id + 1 : 1;
+
+  posts.push(newPost);
+  writePosts(posts);
+  res.status(201).json(newPost);
 });
 
-// Edit a post
-app.put("/posts/:index", (req, res) => {
-  const posts = getPosts();
-  posts[req.params.index] = req.body;
-  savePosts(posts);
-  res.json({ success: true });
+// DELETE a post by ID
+app.delete('/posts/:id', (req, res) => {
+  let posts = readPosts();
+  const id = parseInt(req.params.id);
+
+  const index = posts.findIndex(post => post.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Post not found.' });
+  }
+
+  const deleted = posts.splice(index, 1)[0];
+  writePosts(posts);
+  res.json(deleted);
 });
 
-// Delete a post
-app.delete("/posts/:index", (req, res) => {
-  const posts = getPosts();
-  posts.splice(req.params.index, 1);
-  savePosts(posts);
-  res.json({ success: true });
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
-
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
