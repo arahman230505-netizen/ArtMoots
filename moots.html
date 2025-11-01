@@ -15,7 +15,10 @@ nav a,#userDisplay{margin-left:1rem;text-decoration:none;color:var(--text);font-
 nav a:hover{background:#eee;}
 main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 .user-list{display:flex;flex-direction:column;gap:0.5rem;}
-.user-item{background:white;padding:0.8rem;border-radius:6px;border:1px solid var(--border);}
+.user-item{background:white;padding:0.8rem;border-radius:6px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.user-item span{font-weight:500;}
+.btn-profile{background:var(--accent);color:white;border:none;padding:0.3rem 0.6rem;border-radius:4px;cursor:pointer;}
+.btn-profile:hover{background:#222;}
 </style>
 </head>
 <body>
@@ -36,3 +39,54 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
       </nav>
     </div>
   </header>
+
+<main>
+  <h2>All Artists</h2>
+  <div class="user-list" id="userList"></div>
+</main>
+
+<script src="accounts-database.js"></script>
+<script>
+// Header login system
+const currentUser = getCurrentUser();
+const userDisplay = document.getElementById("userDisplay");
+const logoutBtn = document.getElementById("logoutBtn");
+const signInBtn = document.getElementById("signInBtn");
+const signUpBtn = document.getElementById("signUpBtn");
+const myAccountBtn = document.getElementById("myAccountBtn");
+
+if(currentUser){
+  userDisplay.textContent = currentUser;
+  logoutBtn.style.display="inline-block";
+  myAccountBtn.style.display="inline-block";
+  signInBtn.style.display="none";
+  signUpBtn.style.display="none";
+  myAccountBtn.href="account.html?mode=account";
+} else {
+  const returnURL = window.location.href;
+  signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+  signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
+}
+
+logoutBtn.addEventListener("click",()=>{ logout(); window.location.reload(); });
+
+// Render user list
+const users = getAccounts();
+const userList = document.getElementById("userList");
+users.forEach(user=>{
+  const div = document.createElement("div");
+  div.className = "user-item";
+  div.innerHTML = `<span>${user.username}</span> <button class="btn-profile" onclick="viewProfile('${user.username}')">View</button>`;
+  userList.appendChild(div);
+});
+
+// Profile view
+function viewProfile(username){
+  const account = getAccounts().find(a=>a.username===username);
+  if(account){
+    alert(`Username: ${account.username}\nEmail: ${account.email}`);
+  }
+}
+</script>
+</body>
+</html>
