@@ -1,6 +1,3 @@
-// posts-database.js
-
-// Base URL of your server
 const API_URL = "http://localhost:3000/posts";
 
 // Get all posts
@@ -9,7 +6,7 @@ async function getPosts() {
     const res = await fetch(API_URL);
     return await res.json();
   } catch (err) {
-    console.error("Failed to fetch posts:", err);
+    console.error("Error fetching posts:", err);
     return [];
   }
 }
@@ -17,26 +14,31 @@ async function getPosts() {
 // Add a new post
 async function addPost(post) {
   try {
-    await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(post),
+      body: JSON.stringify(post)
     });
+    return await res.json();
   } catch (err) {
-    console.error("Failed to add post:", err);
+    console.error("Error adding post:", err);
   }
 }
 
-// Edit a post (only editable by author)
-async function editPostDB(id, updatedPost) {
+// Edit a post
+async function editPostDB(id, updatedData) {
   try {
-    await fetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedPost),
-    });
+    const posts = await getPosts();
+    const postToUpdate = posts.find(p => p.id === id);
+    if(!postToUpdate) throw new Error("Post not found");
+
+    const updatedPost = { ...postToUpdate, ...updatedData };
+
+    // Delete old post and add updated one (simplest way with current server)
+    await deletePostDB(id);
+    await addPost(updatedPost);
   } catch (err) {
-    console.error("Failed to edit post:", err);
+    console.error("Error editing post:", err);
   }
 }
 
@@ -45,6 +47,6 @@ async function deletePostDB(id) {
   try {
     await fetch(`${API_URL}/${id}`, { method: "DELETE" });
   } catch (err) {
-    console.error("Failed to delete post:", err);
+    console.error("Error deleting post:", err);
   }
 }
