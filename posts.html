@@ -1,169 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtMoots - Posts</title>
-<style>
-:root {--bg:#f9f9f9;--text:#333;--accent:#111;--border:#ddd;--max-width:1000px;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
-header{background:white;border-bottom:1px solid var(--border);padding:1rem 0;}
-.header-container{max-width:var(--max-width);margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:0 1rem;}
-.logo{font-size:1.4rem;font-weight:bold;letter-spacing:0.5px;}
-nav a,#userDisplay{margin-left:1rem;text-decoration:none;color:var(--text);font-weight:500;padding:0.4rem 0.6rem;border-radius:4px;}
-nav a:hover{background:#eee;}
-main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
-.posts-container{display:flex;flex-direction:column;gap:1rem;margin-top:1rem;}
-.post{background:white;padding:1rem;border-radius:6px;border:1px solid var(--border);}
-.post img{max-width:100%;border-radius:4px;margin-top:0.5rem;}
-form#createPost{background:white;padding:1rem;border-radius:6px;margin-bottom:1rem;display:flex;flex-direction:column;gap:0.5rem;}
-input, textarea, button{padding:0.5rem;border-radius:4px;border:1px solid var(--border);}
-button{background:var(--accent);color:white;border:none;cursor:pointer;}
-button:hover{background:#222;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArtMoots - Posts</title>
+  <style>
+    :root {
+      --bg: #f9f9f9;
+      --text: #333;
+      --accent: #111;
+      --border: #ddd;
+      --max-width: 1000px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+
+    .header-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1rem;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    nav a,
+    #userDisplay {
+      margin-left: 1rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    nav a:hover {
+      background: #eee;
+    }
+
+    main {
+      flex: 1;
+      max-width: var(--max-width);
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .user-item {
+      background: white;
+      padding: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-item span {
+      font-weight: 500;
+    }
+
+    .btn-profile {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-profile:hover {
+      background: #222;
+    }
+
+    .posts-container {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .post {
+      background: white;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .post img {
+      max-width: 100%;
+      border-radius: 4px;
+      margin-top: 0.3rem;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80%;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    form#createPost {
+      background: white;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    input,
+    textarea {
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #222;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="header-container">
+      <div class="logo">ArtMoots</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="posts.html">Posts</a>
+        <a href="moots.html">Moots</a>
+        <a href="help.html">Help</a>
+        <span id="userDisplay"></span>
+        <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
+        <a class="btn" id="signInBtn" href="#">Sign In</a>
+        <a class="btn" id="signUpBtn" href="#">Sign Up</a>
+        <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
+      </nav>
+    </div>
+  </header>
 
-<header>
-  <div class="header-container">
-    <div class="logo">ArtMoots</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="posts.html">Posts</a>
-      <a href="moots.html">Moots</a>
-      <a href="help.html">Help</a>
-      <span id="userDisplay"></span>
-      <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
-      <a class="btn" id="signInBtn" href="#">Sign In</a>
-      <a class="btn" id="signUpBtn" href="#">Sign Up</a>
-      <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
-    </nav>
-  </div>
-</header>
+  <main>
+    <h2>Create a Post</h2>
+    <form id="createPost" style="display:none;">
+      <input type="text" id="postTitle" placeholder="Title" required>
+      <textarea id="postDesc" placeholder="Description" required></textarea>
+      <input type="text" id="postImage" placeholder="Image URL (optional)">
+      <button type="submit">Post</button>
+    </form>
 
-<main>
-  <h2>Create a Post</h2>
-  <form id="createPost" style="display:none;">
-    <input type="text" id="postTitle" placeholder="Title" required>
-    <textarea id="postDesc" placeholder="Description (optional)"></textarea>
-    <input type="file" id="postImageFile" accept="image/*" required>
-    <button type="submit">Post</button>
-  </form>
+    <h2>All Posts</h2>
+    <div class="posts-container" id="postsContainer"></div>
+  </main>
 
-  <h2>All Posts</h2>
-  <div class="posts-container" id="postsContainer"></div>
-</main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
+      authDomain: "database-artmoots.firebaseapp.com",
+      projectId: "database-artmoots",
+      storageBucket: "database-artmoots.firebasestorage.app",
+      messagingSenderId: "1056886155154",
+      appId: "1:1056886155154:web:0de8b27263c11571ea034b",
+      measurementId: "G-YX4MMZS1JB"
+    };
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
-  authDomain: "database-artmoots.firebaseapp.com",
-  projectId: "database-artmoots",
-  storageBucket: "database-artmoots.firebasestorage.app",
-  messagingSenderId: "1056886155154",
-  appId: "1:1056886155154:web:0de8b27263c11571ea034b",
-  measurementId: "G-YX4MMZS1JB"
-};
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+    // Header elements
+    const userDisplay = document.getElementById("userDisplay");
+    const myAccountBtn = document.getElementById("myAccountBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const signInBtn = document.getElementById("signInBtn");
+    const signUpBtn = document.getElementById("signUpBtn");
 
-// Header login system
-const userDisplay = document.getElementById("userDisplay");
-const myAccountBtn = document.getElementById("myAccountBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const signInBtn = document.getElementById("signInBtn");
-const signUpBtn = document.getElementById("signUpBtn");
-const createPostForm = document.getElementById("createPost");
-const postsContainer = document.getElementById("postsContainer");
-
-onAuthStateChanged(auth, user => {
-  if(user){
-    userDisplay.textContent = user.email;
-    myAccountBtn.style.display = "inline-block";
-    logoutBtn.style.display = "inline-block";
-    signInBtn.style.display = "none";
-    signUpBtn.style.display = "none";
-    myAccountBtn.href = "account.html?mode=account";
-    createPostForm.style.display = "flex";
-  } else {
-    userDisplay.textContent = "";
-    myAccountBtn.style.display = "none";
-    logoutBtn.style.display = "none";
-    signInBtn.style.display = "inline-block";
-    signUpBtn.style.display = "inline-block";
-    createPostForm.style.display = "none";
-    const returnURL = window.location.href;
-    signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
-    signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
-  }
-});
-
-logoutBtn.addEventListener("click", ()=> signOut(auth));
-
-// Handle creating a post
-createPostForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const title = document.getElementById("postTitle").value.trim();
-  const desc = document.getElementById("postDesc").value.trim();
-  const file = document.getElementById("postImageFile").files[0];
-
-  if(!title || !file) return alert("Title and image are required.");
-
-  try {
-    // Upload image to Firebase Storage
-    const storageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-    await uploadBytes(storageRef, file);
-    const imageURL = await getDownloadURL(storageRef);
-
-    // Save post to Firestore
-    await addDoc(collection(db, "posts"), {
-      user: auth.currentUser.email,
-      title,
-      description: desc,
-      image: imageURL,
-      createdAt: serverTimestamp()
+    onAuthStateChanged(auth, user => {
+      if(user){
+        userDisplay.textContent = user.email;
+        myAccountBtn.style.display = "inline-block";
+        logoutBtn.style.display = "inline-block";
+        signInBtn.style.display = "none";
+        signUpBtn.style.display = "none";
+        myAccountBtn.href = "account.html?mode=account";
+        document.getElementById("createPost").style.display = "flex";
+      } else {
+        userDisplay.textContent = "";
+        myAccountBtn.style.display = "none";
+        logoutBtn.style.display = "none";
+        signInBtn.style.display = "inline-block";
+        signUpBtn.style.display = "inline-block";
+        const returnURL = window.location.href;
+        signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+        signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
+      }
     });
 
-    createPostForm.reset();
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    // Handle creating a post
+    const createPostForm = document.getElementById("createPost");
+    const postsContainer = document.getElementById("postsContainer");
+
+    createPostForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = document.getElementById("postTitle").value;
+      const desc = document.getElementById("postDesc").value;
+      const image = document.getElementById("postImage").value;
+      const user = auth.currentUser;
+
+      if(!user) return alert("You must be signed in to post.");
+
+      await addDoc(collection(db, "posts"), {
+        user: user.email,
+        title,
+        description: desc,
+        image: image || "",
+        createdAt: new Date()
+      });
+
+      createPostForm.reset();
+      loadPosts();
+    });
+
+    // Load all posts
+    async function loadPosts(){
+      postsContainer.innerHTML = "";
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `
+          <h3>${data.title}</h3>
+          <p>${data.description}</p>
+          ${data.image ? `<img src="${data.image}">` : ""}
+          <small>by ${data.user}</small>
+        `;
+        postsContainer.appendChild(div);
+      });
+    }
+
     loadPosts();
-
-  } catch(err){
-    console.error("Error posting:", err);
-    alert("Failed to create post. See console.");
-  }
-});
-
-// Load all posts
-async function loadPosts(){
-  postsContainer.innerHTML = "";
-  const q = query(collection(db,"posts"), orderBy("createdAt","desc"));
-  const snapshot = await getDocs(q);
-  snapshot.forEach(doc=>{
-    const data = doc.data();
-    const div = document.createElement("div");
-    div.className = "post";
-    div.innerHTML = `
-      <h3>${data.title}</h3>
-      <p>${data.description || ""}</p>
-      ${data.image ? `<img src="${data.image}">` : ""}
-      <small>by ${data.user} | ${data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : ""}</small>
-    `;
-    postsContainer.appendChild(div);
-  });
-}
-
-// Initial load
-loadPosts();
-</script>
+  </script>
 </body>
 </html>
