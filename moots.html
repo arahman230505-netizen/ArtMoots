@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArtMoots - Moots</title>
 <style>
-:root {--bg:#f9f9f9;--text:#333;--muted:#666;--accent:#111;--border:#ddd;--max-width:1000px;}
+:root {--bg:#f9f9f9;--text:#333;--accent:#111;--border:#ddd;--max-width:1000px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
 header{background:white;border-bottom:1px solid var(--border);padding:1rem 0;}
@@ -51,7 +51,6 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
   <div class="user-list" id="userList"></div>
 </main>
 
-<!-- Modal for user posts -->
 <div class="modal" id="postsModal">
   <div class="modal-content">
     <span class="close-modal" id="closeModal">&times;</span>
@@ -63,111 +62,90 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
   authDomain: "database-artmoots.firebaseapp.com",
   projectId: "database-artmoots",
-  storageBucket: "database-artmoots.appspot.com",
+  storageBucket: "database-artmoots.firebasestorage.app",
   messagingSenderId: "1056886155154",
   appId: "1:1056886155154:web:0de8b27263c11571ea034b",
   measurementId: "G-YX4MMZS1JB"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Header elements
+// Header login system
 const userDisplay = document.getElementById("userDisplay");
+const myAccountBtn = document.getElementById("myAccountBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
-const myAccountBtn = document.getElementById("myAccountBtn");
 
-// Modal elements
-const postsModal = document.getElementById("postsModal");
-const closeModal = document.getElementById("closeModal");
-const modalUsername = document.getElementById("modalUsername");
-const modalPosts = document.getElementById("modalPosts");
-
-const userList = document.getElementById("userList");
-
-// --- Auth detection ---
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
   if(user){
     userDisplay.textContent = user.email;
-    myAccountBtn.style.display="inline-block";
-    logoutBtn.style.display="inline-block";
-    signInBtn.style.display="none";
-    signUpBtn.style.display="none";
+    myAccountBtn.style.display = "inline-block";
+    logoutBtn.style.display = "inline-block";
+    signInBtn.style.display = "none";
+    signUpBtn.style.display = "none";
     myAccountBtn.href = "account.html?mode=account";
   } else {
     userDisplay.textContent = "";
-    myAccountBtn.style.display="none";
-    logoutBtn.style.display="none";
-    signInBtn.style.display="inline-block";
-    signUpBtn.style.display="inline-block";
+    myAccountBtn.style.display = "none";
+    logoutBtn.style.display = "none";
+    signInBtn.style.display = "inline-block";
+    signUpBtn.style.display = "inline-block";
     const returnURL = window.location.href;
     signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
     signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
   }
 });
 
-logoutBtn.addEventListener("click", ()=>signOut(auth));
+logoutBtn.addEventListener("click",()=> signOut(auth));
 
-// --- Load all users ---
+// Load all users and their posts
+const userList = document.getElementById("userList");
+const postsModal = document.getElementById("postsModal");
+const closeModal = document.getElementById("closeModal");
+const modalUsername = document.getElementById("modalUsername");
+const modalPosts = document.getElementById("modalPosts");
+
+closeModal.addEventListener("click",()=> postsModal.style.display="none");
+window.addEventListener("click", e=> { if(e.target===postsModal) postsModal.style.display="none"; });
+
 async function loadUsers(){
   userList.innerHTML="";
-  const postsSnapshot = await getDocs(collection(db,"posts"));
-  const usersSet = new Set();
-  postsSnapshot.forEach(doc=>{
-    const data = doc.data();
-    usersSet.add(data.user);
-  });
-  // Render users
-  Array.from(usersSet).forEach(email=>{
+  const usersSnap = await getDocs(collection(db,"users"));
+  usersSnap.forEach(u=>{
     const div = document.createElement("div");
     div.className="user-item";
-    div.innerHTML = `<span>${email}</span> <button class="btn-profile" onclick="viewProfile('${email}')">View</button>`;
+    div.innerHTML = `<span>${u.data().email}</span> <button class="btn-profile" onclick="viewProfile('${u.data().email}')">View</button>`;
     userList.appendChild(div);
   });
 }
 
-// --- View profile & posts ---
 window.viewProfile = async function(email){
   modalUsername.textContent = `Posts by ${email}`;
-  modalPosts.innerHTML = "";
-
-  const postsQuery = query(collection(db,"posts"), where("user","==",email), orderBy("createdAt","desc"));
-  const snapshot = await getDocs(postsQuery);
-
-  if(snapshot.empty){
-    modalPosts.innerHTML = "<p>No posts yet.</p>";
-  } else {
-    snapshot.forEach(doc=>{
-      const p = doc.data();
+  modalPosts.innerHTML="";
+  const postsSnap = await getDocs(query(collection(db,"posts"), where("user","==",email), orderBy("createdAt","desc")));
+  if(postsSnap.empty){ modalPosts.innerHTML="<p>No posts yet.</p>"; }
+  else{
+    postsSnap.forEach(p=>{
+      const data = p.data();
       const div = document.createElement("div");
       div.className="post";
-      div.innerHTML = `<h4>${p.title}</h4>
-                       <p>${p.description}</p>
-                       <img src="${p.image}">`;
+      div.innerHTML=`<h4>${data.title}</h4><p>${data.description}</p><img src="${data.image}">`;
       modalPosts.appendChild(div);
     });
   }
-
   postsModal.style.display="flex";
-};
+}
 
-// --- Close modal ---
-closeModal.addEventListener("click", ()=>{ postsModal.style.display="none"; });
-window.addEventListener("click", e => { if(e.target===postsModal) postsModal.style.display="none"; });
-
-// Initial load
 loadUsers();
-
 </script>
 </body>
 </html>

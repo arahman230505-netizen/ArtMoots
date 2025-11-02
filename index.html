@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ArtMoots</title>
 <style>
-:root {--bg:#f9f9f9;--text:#333;--muted:#666;--accent:#111;--border:#ddd;--max-width:1000px;}
+:root {--bg:#f9f9f9;--text:#333;--accent:#111;--border:#ddd;--max-width:1000px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
 header{background:white;border-bottom:1px solid var(--border);padding:1rem 0;}
@@ -20,27 +20,27 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 <body>
 
 <header>
-    <div class="header-container">
-      <div class="logo">ArtMoots</div>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="posts.html">Posts</a>
-        <a href="moots.html">Moots</a>
-        <a href="help.html">Help</a>
-        <span id="userDisplay"></span>
-        <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
-        <a class="btn" id="signInBtn" href="#">Sign In</a>
-        <a class="btn" id="signUpBtn" href="#">Sign Up</a>
-        <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
-      </nav>
-    </div>
+  <div class="header-container">
+    <div class="logo">ArtMoots</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="posts.html">Posts</a>
+      <a href="moots.html">Moots</a>
+      <a href="help.html">Help</a>
+      <span id="userDisplay"></span>
+      <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
+      <a class="btn" id="signInBtn" href="#">Sign In</a>
+      <a class="btn" id="signUpBtn" href="#">Sign Up</a>
+      <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
+    </nav>
+  </div>
 </header>
 
 <main>
-<div class="hero">
-  <h1>Welcome to ArtMoots</h1>
-  <p>A simple place where artists and visitors can connect, share, and appreciate art.</p>
-</div>
+  <div class="hero">
+    <h1>Welcome to ArtMoots</h1>
+    <p>A simple place where artists and visitors can connect, share, and appreciate art.</p>
+  </div>
 </main>
 
 <script type="module">
@@ -52,23 +52,21 @@ const firebaseConfig = {
   apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
   authDomain: "database-artmoots.firebaseapp.com",
   projectId: "database-artmoots",
-  storageBucket: "database-artmoots.appspot.com",
+  storageBucket: "database-artmoots.firebasestorage.app",
   messagingSenderId: "1056886155154",
   appId: "1:1056886155154:web:0de8b27263c11571ea034b",
   measurementId: "G-YX4MMZS1JB"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Header elements
+// Header login system
 const userDisplay = document.getElementById("userDisplay");
 const myAccountBtn = document.getElementById("myAccountBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
 
-// Monitor login state
 onAuthStateChanged(auth, user => {
   if(user){
     userDisplay.textContent = user.email;
@@ -89,8 +87,7 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// Logout
-logoutBtn.addEventListener("click", () => signOut(auth));
+logoutBtn.addEventListener("click",()=> signOut(auth));
 </script>
 
 </body>

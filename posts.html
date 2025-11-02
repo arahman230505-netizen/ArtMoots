@@ -5,14 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArtMoots - Posts</title>
 <style>
-:root {
-  --bg:#f9f9f9;
-  --text:#333;
-  --muted:#666;
-  --accent:#111;
-  --border:#ddd;
-  --max-width:1000px;
-}
+:root {--bg:#f9f9f9;--text:#333;--muted:#666;--accent:#111;--border:#ddd;--max-width:1000px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
 header{background:white;border-bottom:1px solid var(--border);padding:1rem 0;}
@@ -29,44 +22,43 @@ input,textarea,button{padding:0.5rem;border-radius:6px;border:1px solid var(--bo
 textarea{resize:none;}
 button{background:var(--accent);color:white;border:none;cursor:pointer;}
 button:hover{background:#222;}
-button:disabled{background:#999;cursor:not-allowed;}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-container">
-    <div class="logo">ArtMoots</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="posts.html">Posts</a>
-      <a href="moots.html">Moots</a>
-      <a href="help.html">Help</a>
-      <span id="userDisplay"></span>
-      <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
-      <a class="btn" id="signInBtn" href="#">Sign In</a>
-      <a class="btn" id="signUpBtn" href="#">Sign Up</a>
-      <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
-    </nav>
-  </div>
+    <div class="header-container">
+      <div class="logo">ArtMoots</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="posts.html">Posts</a>
+        <a href="moots.html">Moots</a>
+        <a href="help.html">Help</a>
+        <span id="userDisplay"></span>
+        <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
+        <a class="btn" id="signInBtn" href="#">Sign In</a>
+        <a class="btn" id="signUpBtn" href="#">Sign Up</a>
+        <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
+      </nav>
+    </div>
 </header>
 
 <main>
-  <div class="sidebar">
-    <h3>Search Posts</h3>
-    <input type="text" id="searchInput" placeholder="Search posts...">
-  </div>
+<div class="sidebar">
+  <h3>Search Posts</h3>
+  <input type="text" id="searchInput" placeholder="Search posts...">
+</div>
 
-  <div class="posts-container">
-    <h2>New Post</h2>
-    <input type="text" id="postTitle" placeholder="Title">
-    <textarea id="postDescription" placeholder="Description" rows="3"></textarea>
-    <input type="file" id="postImageFile" accept="image/*">
-    <button id="addPostBtn">Add Post</button>
+<div class="posts-container">
+  <h2>New Post</h2>
+  <input type="text" id="postTitle" placeholder="Title">
+  <textarea id="postDescription" placeholder="Description" rows="3"></textarea>
+  <input type="file" id="postImageFile" accept="image/*">
+  <button id="addPostBtn">Add Post</button>
 
-    <h2>All Posts</h2>
-    <div id="postsList"></div>
-  </div>
+  <h2>All Posts</h2>
+  <div id="postsList"></div>
+</div>
 </main>
 
 <script type="module">
@@ -75,64 +67,59 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-// Firebase config
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
   authDomain: "database-artmoots.firebaseapp.com",
   projectId: "database-artmoots",
-  storageBucket: "database-artmoots.appspot.com",
+  storageBucket: "database-artmoots.firebasestorage.app",
   messagingSenderId: "1056886155154",
   appId: "1:1056886155154:web:0de8b27263c11571ea034b",
   measurementId: "G-YX4MMZS1JB"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Header elements
+// Header login system
 const userDisplay = document.getElementById("userDisplay");
+const myAccountBtn = document.getElementById("myAccountBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
-const myAccountBtn = document.getElementById("myAccountBtn");
-const addPostBtn = document.getElementById("addPostBtn");
 
-// Post elements
-const postsList = document.getElementById("postsList");
-const postTitle = document.getElementById("postTitle");
-const postDescription = document.getElementById("postDescription");
-const postImageFile = document.getElementById("postImageFile");
-const searchInput = document.getElementById("searchInput");
-
-// --- Auth detection ---
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
   if(user){
     userDisplay.textContent = user.email;
-    myAccountBtn.style.display="inline-block";
-    logoutBtn.style.display="inline-block";
-    signInBtn.style.display="none";
-    signUpBtn.style.display="none";
+    myAccountBtn.style.display = "inline-block";
+    logoutBtn.style.display = "inline-block";
+    signInBtn.style.display = "none";
+    signUpBtn.style.display = "none";
     myAccountBtn.href = "account.html?mode=account";
-    addPostBtn.disabled = false;
   } else {
     userDisplay.textContent = "";
-    myAccountBtn.style.display="none";
-    logoutBtn.style.display="none";
-    signInBtn.style.display="inline-block";
-    signUpBtn.style.display="inline-block";
+    myAccountBtn.style.display = "none";
+    logoutBtn.style.display = "none";
+    signInBtn.style.display = "inline-block";
+    signUpBtn.style.display = "inline-block";
     const returnURL = window.location.href;
     signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
     signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
-    addPostBtn.disabled = true;
   }
 });
 
-// Logout
-logoutBtn.addEventListener("click", ()=>signOut(auth));
+logoutBtn.addEventListener("click",()=> signOut(auth));
 
-// --- Add Post ---
+// POSTS
+const postsList = document.getElementById("postsList");
+const addPostBtn = document.getElementById("addPostBtn");
+const postTitle = document.getElementById("postTitle");
+const postDescription = document.getElementById("postDescription");
+const postImageFile = document.getElementById("postImageFile");
+
 addPostBtn.addEventListener("click", async ()=>{
   const user = auth.currentUser;
   if(!user) return alert("Please sign in to post.");
@@ -140,7 +127,7 @@ addPostBtn.addEventListener("click", async ()=>{
   const title = postTitle.value.trim();
   const description = postDescription.value.trim();
   const file = postImageFile.files[0];
-  if(!title || !file) return alert("Please provide title and image.");
+  if(!title || !file) return alert("Enter a title and image.");
 
   const imageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
   await uploadBytes(imageRef, file);
@@ -154,11 +141,12 @@ addPostBtn.addEventListener("click", async ()=>{
     createdAt: new Date()
   });
 
-  postTitle.value=""; postDescription.value=""; postImageFile.value="";
+  postTitle.value="";
+  postDescription.value="";
+  postImageFile.value="";
   loadPosts();
 });
 
-// --- Load posts ---
 async function loadPosts(){
   postsList.innerHTML="";
   const q = query(collection(db,"posts"), orderBy("createdAt","desc"));
@@ -175,21 +163,8 @@ async function loadPosts(){
     `;
     postsList.appendChild(div);
   });
-  applySearch();
 }
 
-// --- Search ---
-function applySearch(){
-  const queryText = searchInput.value.toLowerCase();
-  document.querySelectorAll(".post").forEach(post=>{
-    const title = post.querySelector("h4").textContent.toLowerCase();
-    const desc = post.querySelector("p").textContent.toLowerCase();
-    post.style.display = title.includes(queryText) || desc.includes(queryText) ? "block" : "none";
-  });
-}
-searchInput.addEventListener("input", applySearch);
-
-// Initial load
 loadPosts();
 </script>
 </body>
