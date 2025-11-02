@@ -99,8 +99,8 @@ button:hover { background: #222; }
 /* Posts Box */
 .posts-section {
   width: 600px;
-  height: 600px;        /* fixed size */
-  overflow-y: auto;      /* scroll if too many posts */
+  height: 600px;
+  overflow-y: auto;   /* scroll if content exceeds height */
   border: 1px solid var(--border);
   border-radius: 6px;
   background: white;
@@ -112,7 +112,7 @@ button:hover { background: #222; }
 /* Posts Grid inside fixed box */
 .posts-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 posts per row */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.5rem;
   justify-items: center;
 }
@@ -121,8 +121,7 @@ button:hover { background: #222; }
   background: #f9f9f9;
   border-radius: 6px;
   border: 1px solid var(--border);
-  width: 180px;           /* fit inside grid */
-  height: 250px;
+  width: 100%;      
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,16 +131,16 @@ button:hover { background: #222; }
 }
 
 .post img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
+  width: 100%;        /* fit the width of the post */
+  height: auto;       /* maintain aspect ratio */
+  max-height: 300px;  /* prevents image from overflowing */
   border-radius: 4px;
   margin-bottom: 0.3rem;
 }
 
-.post h3 { font-size: 0.9rem; margin: 0.2rem 0; }
-.post p { font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; }
-.post small { color: #777; font-size: 0.7rem; margin-top: 0.2rem; }
+.post h3, .post p, .post small {
+  margin: 0.2rem 0;
+}
 
 /* Responsive */
 @media (max-width: 1000px) {
