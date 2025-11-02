@@ -50,11 +50,30 @@ nav a:hover { background: #eee; }
 
 main { flex: 1; max-width: var(--max-width); margin: 2rem auto; padding: 0 1rem; }
 
-.posts-container { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+.posts-container {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center; /* ✅ center all posts */
+}
 
-.post { background: white; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
+.post {
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 800px; /* ✅ posts won’t exceed 800px width */
+  min-width: 400px; /* ✅ posts won’t shrink below 400px on larger screens */
+}
 
-.post img { max-width: 100%; border-radius: 4px; margin-top: 0.3rem; }
+.post img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin-top: 0.3rem;
+  height: auto;
+}
 
 form#createPost {
   background: white;
@@ -78,6 +97,14 @@ button {
 }
 
 button:hover { background: #222; }
+
+/* ✅ Optional: make it responsive for smaller screens */
+@media (max-width: 450px) {
+  .post {
+    min-width: auto;
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
@@ -140,7 +167,7 @@ const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
 
 onAuthStateChanged(auth, user => {
-  if(user){
+  if (user) {
     userDisplay.textContent = user.displayName || "Anonymous";
     myAccountBtn.style.display = "inline-block";
     logoutBtn.style.display = "inline-block";
@@ -155,7 +182,7 @@ onAuthStateChanged(auth, user => {
     signInBtn.style.display = "inline-block";
     signUpBtn.style.display = "inline-block";
 
-    // ✅ Added from index.html – sets Sign In / Sign Up redirect URLs dynamically
+    // ✅ same redirect logic as index.html
     const returnURL = window.location.href;
     signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
     signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
@@ -170,7 +197,7 @@ const postImageFile = document.getElementById("postImageFile");
 
 postImageFile.addEventListener("change", () => {
   const file = postImageFile.files[0];
-  if(!file) return;
+  if (!file) return;
 
   const reader = new FileReader();
   reader.onload = () => {
@@ -189,14 +216,14 @@ createPostForm.addEventListener("submit", async e => {
   const desc = document.getElementById("postDesc").value;
   const user = auth.currentUser;
 
-  if(!user) return alert("You must be signed in to post.");
-  if(!imageUrl) return alert("Please wait for the image to load.");
+  if (!user) return alert("You must be signed in to post.");
+  if (!imageUrl) return alert("Please wait for the image to load.");
 
   await addDoc(collection(db, "posts"), {
     user: user.displayName || "Anonymous",
     title,
     description: desc,
-    image: imageUrl, // stored from hidden variable
+    image: imageUrl,
     createdAt: new Date()
   });
 
@@ -207,7 +234,7 @@ createPostForm.addEventListener("submit", async e => {
 });
 
 // --- Load posts ---
-async function loadPosts(){
+async function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
