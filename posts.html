@@ -154,6 +154,11 @@ onAuthStateChanged(auth, user => {
     logoutBtn.style.display = "none";
     signInBtn.style.display = "inline-block";
     signUpBtn.style.display = "inline-block";
+
+    // ✅ Added from index.html – sets Sign In / Sign Up redirect URLs dynamically
+    const returnURL = window.location.href;
+    signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+    signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
   }
 });
 
