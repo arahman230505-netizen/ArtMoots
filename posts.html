@@ -141,7 +141,7 @@ const signUpBtn = document.getElementById("signUpBtn");
 
 onAuthStateChanged(auth, user => {
   if(user){
-    userDisplay.textContent = user.email;
+    userDisplay.textContent = user.displayName || "Anonymous";
     myAccountBtn.style.display = "inline-block";
     logoutBtn.style.display = "inline-block";
     signInBtn.style.display = "none";
