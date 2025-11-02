@@ -108,7 +108,7 @@
     <form id="createPost" style="display:none;">
       <input type="text" id="postTitle" placeholder="Title" required>
       <textarea id="postDesc" placeholder="Description" required></textarea>
-      <input type="file" id="postImageFile" accept="image/*">
+      <input type="file" id="postImageFile" accept="image/*" required>
       <button type="submit">Post</button>
     </form>
 
@@ -120,6 +120,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -135,6 +136,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     // Header elements
     const userDisplay = document.getElementById("userDisplay");
@@ -178,49 +180,34 @@
       const user = auth.currentUser;
 
       if(!user) return alert("You must be signed in to post.");
+      if(!imageFile) return alert("Please select an image.");
 
-      // If user uploaded an image, use FileReader to display it locally
-      let imageData = "";
-      if(imageFile){
-        const reader = new FileReader();
-        reader.onload = () => {
-          imageData = reader.result;
-          addPostToDB();
-          displayPost(imageData);
-        };
-        reader.readAsDataURL(imageFile);
-      } else {
-        addPostToDB();
-      }
+      // 1️⃣ Upload image first
+      const storageRef = ref(storage, `posts/${imageFile.name}_${Date.now()}`);
+      await uploadBytes(storageRef, imageFile);
 
-      function addPostToDB(){
-        addDoc(collection(db, "posts"), {
-          user: user.email,
-          title: title,
-          description: desc,
-          createdAt: new Date()
-        });
-        createPostForm.reset();
-      }
+      // 2️⃣ Get the URL
+      const imageUrl = await getDownloadURL(storageRef);
 
-      function displayPost(imgData){
-        const div = document.createElement("div");
-        div.className = "post";
-        div.innerHTML = `
-          <h3>${title}</h3>
-          <p>${desc}</p>
-          ${imgData ? `<img src="${imgData}">` : ""}
-          <small>by ${user.email}</small>
-        `;
-        postsContainer.prepend(div);
-      }
+      // 3️⃣ Save post with image URL
+      await addDoc(collection(db, "posts"), {
+        user: user.email,
+        title,
+        description: desc,
+        image: imageUrl,
+        createdAt: new Date()
+      });
+
+      createPostForm.reset();
+      loadPosts();
     });
 
-    // Load all posts from Firestore
+    // Load all posts
     async function loadPosts(){
       postsContainer.innerHTML = "";
       const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
+
       snapshot.forEach(doc => {
         const data = doc.data();
         const div = document.createElement("div");
@@ -228,6 +215,7 @@
         div.innerHTML = `
           <h3>${data.title}</h3>
           <p>${data.description}</p>
+          ${data.image ? `<img src="${data.image}">` : ""}
           <small>by ${data.user}</small>
         `;
         postsContainer.appendChild(div);
