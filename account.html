@@ -22,7 +22,6 @@ button:hover{background:#222;}
 
 <form id="signupForm">
   <h2>Sign Up</h2>
-  <input type="text" id="signupUsername" placeholder="Username" required>
   <input type="email" id="signupEmail" placeholder="Email" required>
   <input type="password" id="signupPassword" placeholder="Password" required>
   <button type="submit">Create Account</button>
@@ -31,7 +30,7 @@ button:hover{background:#222;}
 
 <form id="loginForm" style="display:none">
   <h2>Login</h2>
-  <input type="text" id="loginUsername" placeholder="Username" required>
+  <input type="email" id="loginEmail" placeholder="Email" required>
   <input type="password" id="loginPassword" placeholder="Password" required>
   <button type="submit">Log In</button>
   <div class="toggle" onclick="toggleForms()">Don't have an account? Sign up</div>
@@ -39,17 +38,31 @@ button:hover{background:#222;}
 
 <div id="accountInfo">
   <h2>My Account</h2>
-  <p id="accUsername"></p>
   <p id="accEmail"></p>
   <button id="logoutBtn">Logout</button>
 </div>
 
-<script src="accounts-database.js"></script>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
+  authDomain: "database-artmoots.firebaseapp.com",
+  projectId: "database-artmoots",
+  storageBucket: "database-artmoots.appspot.com",
+  messagingSenderId: "1056886155154",
+  appId: "1:1056886155154:web:0de8b27263c11571ea034b",
+  measurementId: "G-YX4MMZS1JB"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 const signupForm = document.getElementById("signupForm");
 const loginForm = document.getElementById("loginForm");
 const accountInfo = document.getElementById("accountInfo");
-const accUsername = document.getElementById("accUsername");
 const accEmail = document.getElementById("accEmail");
 const logoutBtn = document.getElementById("logoutBtn");
 
@@ -58,46 +71,62 @@ function toggleForms() {
   loginForm.style.display = loginForm.style.display==="none"?"flex":"none";
 }
 
-// URL mode & return page
+// URL mode & return
 const params = new URLSearchParams(window.location.search);
 const mode = params.get("mode");
 const returnPage = params.get("return") || "index.html";
 
-const currentUser = getCurrentUser();
-if(currentUser && mode==="account"){
-  signupForm.style.display="none";
-  loginForm.style.display="none";
-  accountInfo.style.display="block";
-  accUsername.textContent = "Username: " + currentUser;
-  const acc = getAccounts().find(a=>a.username===currentUser);
-  accEmail.textContent = "Email: " + acc.email;
-}
-
 if(mode==="login"){signupForm.style.display="none"; loginForm.style.display="flex";}
 if(mode==="signup"){signupForm.style.display="flex"; loginForm.style.display="none";}
 
-// Sign Up
-signupForm.addEventListener("submit", e=>{
+// Auth state detection
+onAuthStateChanged(auth, user=>{
+  if(user){
+    signupForm.style.display="none";
+    loginForm.style.display="none";
+    accountInfo.style.display="block";
+    accEmail.textContent = "Email: " + user.email;
+  } else if(mode==="login"){
+    signupForm.style.display="none";
+    loginForm.style.display="flex";
+  } else if(mode==="signup"){
+    signupForm.style.display="flex";
+    loginForm.style.display="none";
+  }
+});
+
+// --- Sign Up ---
+signupForm.addEventListener("submit", async e=>{
   e.preventDefault();
-  const username = document.getElementById("signupUsername").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
-  if(signUp(username,email,password)) window.location.href = returnPage;
+  try{
+    await createUserWithEmailAndPassword(auth,email,password);
+    window.location.href = returnPage;
+  } catch(err){
+    alert(err.message);
+  }
 });
 
-// Login
-loginForm.addEventListener("submit", e=>{
+// --- Login ---
+loginForm.addEventListener("submit", async e=>{
   e.preventDefault();
-  const username = document.getElementById("loginUsername").value.trim();
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
-  if(login(username,password)) window.location.href = returnPage;
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    window.location.href = returnPage;
+  } catch(err){
+    alert(err.message);
+  }
 });
 
-// Logout
-logoutBtn.addEventListener("click",()=>{
-  logout();
-  window.location.href = "index.html";
+// --- Logout ---
+logoutBtn.addEventListener("click", async ()=>{
+  await signOut(auth);
+  window.location.href="index.html";
 });
 </script>
+
 </body>
 </html>

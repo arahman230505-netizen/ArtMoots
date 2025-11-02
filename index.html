@@ -43,33 +43,55 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 </div>
 </main>
 
-<script src="accounts-database.js"></script>
-<script>
-// Header login system
-const currentUser = getCurrentUser();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
+  authDomain: "database-artmoots.firebaseapp.com",
+  projectId: "database-artmoots",
+  storageBucket: "database-artmoots.appspot.com",
+  messagingSenderId: "1056886155154",
+  appId: "1:1056886155154:web:0de8b27263c11571ea034b",
+  measurementId: "G-YX4MMZS1JB"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Header elements
 const userDisplay = document.getElementById("userDisplay");
 const myAccountBtn = document.getElementById("myAccountBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
 
-if(currentUser){
-  userDisplay.textContent = currentUser;
-  myAccountBtn.style.display="inline-block";
-  logoutBtn.style.display="inline-block";
-  signInBtn.style.display="none";
-  signUpBtn.style.display="none";
-  myAccountBtn.href = "account.html?mode=account";
-} else {
-  const returnURL = window.location.href;
-  signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
-  signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
-}
-
-logoutBtn.addEventListener("click",()=>{
-  logout();
-  window.location.reload();
+// Monitor login state
+onAuthStateChanged(auth, user => {
+  if(user){
+    userDisplay.textContent = user.email;
+    myAccountBtn.style.display = "inline-block";
+    logoutBtn.style.display = "inline-block";
+    signInBtn.style.display = "none";
+    signUpBtn.style.display = "none";
+    myAccountBtn.href = "account.html?mode=account";
+  } else {
+    userDisplay.textContent = "";
+    myAccountBtn.style.display = "none";
+    logoutBtn.style.display = "none";
+    signInBtn.style.display = "inline-block";
+    signUpBtn.style.display = "inline-block";
+    const returnURL = window.location.href;
+    signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+    signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
+  }
 });
+
+// Logout
+logoutBtn.addEventListener("click", () => signOut(auth));
 </script>
+
 </body>
 </html>

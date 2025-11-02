@@ -69,127 +69,128 @@ button:disabled{background:#999;cursor:not-allowed;}
   </div>
 </main>
 
-<script src="accounts-database.js"></script> <!-- use your home page accounts file -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
-    authDomain: "database-artmoots.firebaseapp.com",
-    projectId: "database-artmoots",
-    storageBucket: "database-artmoots.appspot.com",
-    messagingSenderId: "1056886155154",
-    appId: "1:1056886155154:web:0de8b27263c11571ea034b",
-    measurementId: "G-YX4MMZS1JB"
-  };
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
+  authDomain: "database-artmoots.firebaseapp.com",
+  projectId: "database-artmoots",
+  storageBucket: "database-artmoots.appspot.com",
+  messagingSenderId: "1056886155154",
+  appId: "1:1056886155154:web:0de8b27263c11571ea034b",
+  measurementId: "G-YX4MMZS1JB"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-  // --- Header logic like home page ---
-  const currentUser = getCurrentUser();
-  const userDisplay = document.getElementById("userDisplay");
-  const myAccountBtn = document.getElementById("myAccountBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const signInBtn = document.getElementById("signInBtn");
-  const signUpBtn = document.getElementById("signUpBtn");
-  const addPostBtn = document.getElementById("addPostBtn");
+// Header elements
+const userDisplay = document.getElementById("userDisplay");
+const logoutBtn = document.getElementById("logoutBtn");
+const signInBtn = document.getElementById("signInBtn");
+const signUpBtn = document.getElementById("signUpBtn");
+const myAccountBtn = document.getElementById("myAccountBtn");
+const addPostBtn = document.getElementById("addPostBtn");
 
-  function updateHeader(){
-    if(currentUser){
-      userDisplay.textContent = currentUser;
-      myAccountBtn.style.display="inline-block";
-      logoutBtn.style.display="inline-block";
-      signInBtn.style.display="none";
-      signUpBtn.style.display="none";
-      myAccountBtn.href = "account.html?mode=account";
-      addPostBtn.disabled = false;
-    } else {
-      userDisplay.textContent = "";
-      myAccountBtn.style.display="none";
-      logoutBtn.style.display="none";
-      signInBtn.style.display="inline-block";
-      signUpBtn.style.display="inline-block";
-      const returnURL = window.location.href;
-      signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
-      signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
-      addPostBtn.disabled = true;
-    }
+// Post elements
+const postsList = document.getElementById("postsList");
+const postTitle = document.getElementById("postTitle");
+const postDescription = document.getElementById("postDescription");
+const postImageFile = document.getElementById("postImageFile");
+const searchInput = document.getElementById("searchInput");
+
+// --- Auth detection ---
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    userDisplay.textContent = user.email;
+    myAccountBtn.style.display="inline-block";
+    logoutBtn.style.display="inline-block";
+    signInBtn.style.display="none";
+    signUpBtn.style.display="none";
+    myAccountBtn.href = "account.html?mode=account";
+    addPostBtn.disabled = false;
+  } else {
+    userDisplay.textContent = "";
+    myAccountBtn.style.display="none";
+    logoutBtn.style.display="none";
+    signInBtn.style.display="inline-block";
+    signUpBtn.style.display="inline-block";
+    const returnURL = window.location.href;
+    signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+    signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
+    addPostBtn.disabled = true;
   }
+});
 
-  updateHeader();
+// Logout
+logoutBtn.addEventListener("click", ()=>signOut(auth));
 
-  logoutBtn.addEventListener("click", ()=>{
-    logout();
-    window.location.reload();
+// --- Add Post ---
+addPostBtn.addEventListener("click", async ()=>{
+  const user = auth.currentUser;
+  if(!user) return alert("Please sign in to post.");
+
+  const title = postTitle.value.trim();
+  const description = postDescription.value.trim();
+  const file = postImageFile.files[0];
+  if(!title || !file) return alert("Please provide title and image.");
+
+  const imageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
+  await uploadBytes(imageRef, file);
+  const imageURL = await getDownloadURL(imageRef);
+
+  await addDoc(collection(db,"posts"),{
+    title,
+    description,
+    image: imageURL,
+    user: user.email,
+    createdAt: new Date()
   });
 
-  // --- Post logic ---
-  const postsList = document.getElementById("postsList");
-  const postTitle = document.getElementById("postTitle");
-  const postDescription = document.getElementById("postDescription");
-  const postImageFile = document.getElementById("postImageFile");
-  const searchInput = document.getElementById("searchInput");
-
-  addPostBtn.addEventListener("click", async () => {
-    const user = getCurrentUser();
-    if(!user) return alert("Please sign in to post.");
-    const title = postTitle.value.trim();
-    const description = postDescription.value.trim();
-    const file = postImageFile.files[0];
-    if(!title || !file) return alert("Enter a title and image.");
-
-    const imageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-    await uploadBytes(imageRef, file);
-    const imageURL = await getDownloadURL(imageRef);
-
-    await addDoc(collection(db,"posts"),{
-      title,
-      description,
-      image: imageURL,
-      user,
-      createdAt: new Date()
-    });
-
-    postTitle.value=""; postDescription.value=""; postImageFile.value="";
-    loadPosts();
-  });
-
-  async function loadPosts(){
-    postsList.innerHTML="";
-    const q = query(collection(db,"posts"), orderBy("createdAt","desc"));
-    const snapshot = await getDocs(q);
-    snapshot.forEach(doc=>{
-      const p = doc.data();
-      const div = document.createElement("div");
-      div.className="post";
-      div.innerHTML=`
-        <h4>${p.title}</h4>
-        <p>${p.description}</p>
-        <p>by ${p.user}</p>
-        <img src="${p.image}" />
-      `;
-      postsList.appendChild(div);
-    });
-    applySearch();
-  }
-
-  function applySearch(){
-    const queryText = searchInput.value.toLowerCase();
-    document.querySelectorAll(".post").forEach(post=>{
-      const title = post.querySelector("h4").textContent.toLowerCase();
-      const desc = post.querySelector("p").textContent.toLowerCase();
-      post.style.display = title.includes(queryText) || desc.includes(queryText) ? "block" : "none";
-    });
-  }
-
-  searchInput.addEventListener("input", applySearch);
+  postTitle.value=""; postDescription.value=""; postImageFile.value="";
   loadPosts();
+});
 
+// --- Load posts ---
+async function loadPosts(){
+  postsList.innerHTML="";
+  const q = query(collection(db,"posts"), orderBy("createdAt","desc"));
+  const snapshot = await getDocs(q);
+  snapshot.forEach(doc=>{
+    const p = doc.data();
+    const div = document.createElement("div");
+    div.className="post";
+    div.innerHTML=`
+      <h4>${p.title}</h4>
+      <p>${p.description}</p>
+      <p>by ${p.user}</p>
+      <img src="${p.image}" />
+    `;
+    postsList.appendChild(div);
+  });
+  applySearch();
+}
+
+// --- Search ---
+function applySearch(){
+  const queryText = searchInput.value.toLowerCase();
+  document.querySelectorAll(".post").forEach(post=>{
+    const title = post.querySelector("h4").textContent.toLowerCase();
+    const desc = post.querySelector("p").textContent.toLowerCase();
+    post.style.display = title.includes(queryText) || desc.includes(queryText) ? "block" : "none";
+  });
+}
+searchInput.addEventListener("input", applySearch);
+
+// Initial load
+loadPosts();
 </script>
-
 </body>
 </html>

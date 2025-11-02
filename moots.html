@@ -30,20 +30,20 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
 <body>
 
 <header>
-    <div class="header-container">
-      <div class="logo">ArtMoots</div>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="posts.html">Posts</a>
-        <a href="moots.html">Moots</a>
-        <a href="help.html">Help</a>
-        <span id="userDisplay"></span>
-        <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
-        <a class="btn" id="signInBtn" href="#">Sign In</a>
-        <a class="btn" id="signUpBtn" href="#">Sign Up</a>
-        <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
-      </nav>
-    </div>
+  <div class="header-container">
+    <div class="logo">ArtMoots</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="posts.html">Posts</a>
+      <a href="moots.html">Moots</a>
+      <a href="help.html">Help</a>
+      <span id="userDisplay"></span>
+      <a class="btn" id="myAccountBtn" href="#" style="display:none;">My Account</a>
+      <a class="btn" id="signInBtn" href="#">Sign In</a>
+      <a class="btn" id="signUpBtn" href="#">Sign Up</a>
+      <a class="btn" id="logoutBtn" href="#" style="display:none;">Logout</a>
+    </nav>
+  </div>
 </header>
 
 <main>
@@ -60,41 +60,32 @@ main{flex:1;max-width:var(--max-width);margin:2rem auto;padding:0 1rem;}
   </div>
 </div>
 
-<script src="accounts-database.js"></script>
-<script src="posts-database.js"></script>
-<script>
-// Header login system
-const currentUser = getCurrentUser();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
+  authDomain: "database-artmoots.firebaseapp.com",
+  projectId: "database-artmoots",
+  storageBucket: "database-artmoots.appspot.com",
+  messagingSenderId: "1056886155154",
+  appId: "1:1056886155154:web:0de8b27263c11571ea034b",
+  measurementId: "G-YX4MMZS1JB"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Header elements
 const userDisplay = document.getElementById("userDisplay");
 const logoutBtn = document.getElementById("logoutBtn");
 const signInBtn = document.getElementById("signInBtn");
 const signUpBtn = document.getElementById("signUpBtn");
 const myAccountBtn = document.getElementById("myAccountBtn");
-
-if(currentUser){
-  userDisplay.textContent = currentUser;
-  logoutBtn.style.display="inline-block";
-  myAccountBtn.style.display="inline-block";
-  signInBtn.style.display="none";
-  signUpBtn.style.display="none";
-  myAccountBtn.href="account.html?mode=account";
-} else {
-  const returnURL = window.location.href;
-  signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
-  signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
-}
-
-logoutBtn.addEventListener("click",()=>{ logout(); window.location.reload(); });
-
-// Render user list
-const users = getAccounts();
-const userList = document.getElementById("userList");
-users.forEach(user=>{
-  const div = document.createElement("div");
-  div.className = "user-item";
-  div.innerHTML = `<span>${user.username}</span> <button class="btn-profile" onclick="viewProfile('${user.username}')">View</button>`;
-  userList.appendChild(div);
-});
 
 // Modal elements
 const postsModal = document.getElementById("postsModal");
@@ -102,33 +93,81 @@ const closeModal = document.getElementById("closeModal");
 const modalUsername = document.getElementById("modalUsername");
 const modalPosts = document.getElementById("modalPosts");
 
-// Close modal
-closeModal.addEventListener("click", ()=>{ postsModal.style.display="none"; });
-window.addEventListener("click", e => { if(e.target === postsModal) postsModal.style.display="none"; });
+const userList = document.getElementById("userList");
 
-// View profile & posts
-function viewProfile(username){
-  const account = getAccounts().find(a=>a.username===username);
-  if(account){
-    modalUsername.textContent = `Posts by ${account.username}`;
-    modalPosts.innerHTML = "";
-
-    const userPosts = getPosts().filter(p=>p.user === account.username);
-    if(userPosts.length === 0){
-      modalPosts.innerHTML = "<p>No posts yet.</p>";
-    } else {
-      userPosts.forEach(p=>{
-        const div = document.createElement("div");
-        div.className = "post";
-        div.innerHTML = `<h4>${p.title}</h4>
-                         <p>${p.description}</p>
-                         <img src="${p.image}">`;
-        modalPosts.appendChild(div);
-      });
-    }
-    postsModal.style.display = "flex";
+// --- Auth detection ---
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    userDisplay.textContent = user.email;
+    myAccountBtn.style.display="inline-block";
+    logoutBtn.style.display="inline-block";
+    signInBtn.style.display="none";
+    signUpBtn.style.display="none";
+    myAccountBtn.href = "account.html?mode=account";
+  } else {
+    userDisplay.textContent = "";
+    myAccountBtn.style.display="none";
+    logoutBtn.style.display="none";
+    signInBtn.style.display="inline-block";
+    signUpBtn.style.display="inline-block";
+    const returnURL = window.location.href;
+    signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
+    signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
   }
+});
+
+logoutBtn.addEventListener("click", ()=>signOut(auth));
+
+// --- Load all users ---
+async function loadUsers(){
+  userList.innerHTML="";
+  const postsSnapshot = await getDocs(collection(db,"posts"));
+  const usersSet = new Set();
+  postsSnapshot.forEach(doc=>{
+    const data = doc.data();
+    usersSet.add(data.user);
+  });
+  // Render users
+  Array.from(usersSet).forEach(email=>{
+    const div = document.createElement("div");
+    div.className="user-item";
+    div.innerHTML = `<span>${email}</span> <button class="btn-profile" onclick="viewProfile('${email}')">View</button>`;
+    userList.appendChild(div);
+  });
 }
+
+// --- View profile & posts ---
+window.viewProfile = async function(email){
+  modalUsername.textContent = `Posts by ${email}`;
+  modalPosts.innerHTML = "";
+
+  const postsQuery = query(collection(db,"posts"), where("user","==",email), orderBy("createdAt","desc"));
+  const snapshot = await getDocs(postsQuery);
+
+  if(snapshot.empty){
+    modalPosts.innerHTML = "<p>No posts yet.</p>";
+  } else {
+    snapshot.forEach(doc=>{
+      const p = doc.data();
+      const div = document.createElement("div");
+      div.className="post";
+      div.innerHTML = `<h4>${p.title}</h4>
+                       <p>${p.description}</p>
+                       <img src="${p.image}">`;
+      modalPosts.appendChild(div);
+    });
+  }
+
+  postsModal.style.display="flex";
+};
+
+// --- Close modal ---
+closeModal.addEventListener("click", ()=>{ postsModal.style.display="none"; });
+window.addEventListener("click", e => { if(e.target===postsModal) postsModal.style.display="none"; });
+
+// Initial load
+loadUsers();
+
 </script>
 </body>
 </html>
