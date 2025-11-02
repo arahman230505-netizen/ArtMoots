@@ -104,7 +104,7 @@ button:hover { background: #222; }
 <form id="createPost" style="display:none;">
   <input type="text" id="postTitle" placeholder="Title" required>
   <textarea id="postDesc" placeholder="Description" required></textarea>
-  <input type="text" id="postImage" placeholder="Image URL will appear here" readonly required>
+  <!-- Hidden image URL variable handled in JS -->
   <input type="file" id="postImageFile" accept="image/*" required>
   <button type="submit">Post</button>
 </form>
@@ -159,9 +159,9 @@ onAuthStateChanged(auth, user => {
 
 logoutBtn.addEventListener("click", () => signOut(auth));
 
-// --- Convert selected image to base64 URL immediately ---
+// --- Hidden image URL generation ---
+let imageUrl = ""; // stores the base64 URL in memory
 const postImageFile = document.getElementById("postImageFile");
-const postImageInput = document.getElementById("postImage");
 
 postImageFile.addEventListener("change", () => {
   const file = postImageFile.files[0];
@@ -169,12 +169,12 @@ postImageFile.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.onload = () => {
-    postImageInput.value = reader.result; // base64 URL
+    imageUrl = reader.result; // generated in background
   };
   reader.readAsDataURL(file);
 });
 
-// --- Handle post submission ---
+// --- Post submission ---
 const createPostForm = document.getElementById("createPost");
 const postsContainer = document.getElementById("postsContainer");
 
@@ -182,22 +182,21 @@ createPostForm.addEventListener("submit", async e => {
   e.preventDefault();
   const title = document.getElementById("postTitle").value;
   const desc = document.getElementById("postDesc").value;
-  const imageUrl = document.getElementById("postImage").value;
   const user = auth.currentUser;
 
   if(!user) return alert("You must be signed in to post.");
-  if(!imageUrl) return alert("Image URL is not ready yet.");
+  if(!imageUrl) return alert("Please wait for the image to load.");
 
   await addDoc(collection(db, "posts"), {
     user: user.email,
     title,
     description: desc,
-    image: imageUrl,
+    image: imageUrl, // stored from hidden variable
     createdAt: new Date()
   });
 
   createPostForm.reset();
-  postImageInput.value = "";
+  imageUrl = ""; // reset for next post
   postsContainer.innerHTML = "";
   loadPosts();
 });
