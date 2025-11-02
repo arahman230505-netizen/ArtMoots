@@ -62,7 +62,7 @@ main {
   margin: 2rem auto;
   padding: 0 1rem;
   display: grid;
-  grid-template-columns: 300px 1fr; /* form left, posts right */
+  grid-template-columns: 300px 1fr; /* ✅ form on left, posts on right */
   gap: 2rem;
 }
 
@@ -100,62 +100,45 @@ button:hover { background: #222; }
 
 /* Posts Grid */
 .posts-container {
-  display: flex;
-  flex-wrap: wrap;       /* ✅ allows images to go right and then down */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* ✅ grid layout */
   gap: 1rem;
+  justify-items: center;
 }
 
 .post {
   background: white;
   border-radius: 6px;
   border: 1px solid var(--border);
-  width: 300px;          /* fixed width */
-  height: 600px;         /* fixed height */
+  width: 100%;
+  max-width: 200px;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   text-align: center;
-  padding: 0.5rem;
-  overflow: hidden;      /* prevents overflow if text is too long */
 }
 
 .post img {
   width: 100%;
-  height: 400px;         /* image takes top portion */
-  object-fit: cover;     /* ✅ fills image area without stretching */
+  height: auto;
   border-radius: 4px;
-  margin-bottom: 0.5rem;
+  margin-top: 0.3rem;
 }
 
 .post h3 {
-  margin: 0.3rem 0;
-  font-size: 1rem;
-}
-
-.post p {
-  font-size: 0.9rem;
-  overflow: auto;        /* scroll if description is too long */
-  flex-grow: 1;
+  margin-bottom: 0.3rem;
 }
 
 .post small {
-  color: #777;
   margin-top: 0.3rem;
-  font-size: 0.8rem;
+  color: #777;
 }
 
 /* Responsive */
-@media (max-width: 800px) {
+@media (max-width: 400px) {
   main {
     grid-template-columns: 1fr;
-  }
-  .post {
-    width: 100%;
-    height: auto;
-  }
-  .post img {
-    height: 300px;
   }
 }
 </style>
@@ -201,6 +184,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDMBb5n4Tyf9XLSHU_7CZ1obDlHjzrw258",
   authDomain: "database-artmoots.firebaseapp.com",
@@ -236,6 +220,7 @@ onAuthStateChanged(auth, user => {
     logoutBtn.style.display = "none";
     signInBtn.style.display = "inline-block";
     signUpBtn.style.display = "inline-block";
+
     const returnURL = window.location.href;
     signInBtn.href = `account.html?mode=login&return=${encodeURIComponent(returnURL)}`;
     signUpBtn.href = `account.html?mode=signup&return=${encodeURIComponent(returnURL)}`;
